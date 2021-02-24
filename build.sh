@@ -39,8 +39,8 @@ cd ${DIR}/build
 wget --progress=dot:giga https://downloads.plex.tv/plex-media-server-new/${PLEX_VERSION}/debian/plexmediaserver_${PLEX_VERSION}_${DEB_ARCH}.deb -O plexmediaserver.deb
 ar x plexmediaserver.deb
 tar xf data.tar.xz
-cp usr/lib/plexmediaserver/*  ${BUILD_DIR}/bin
-cp usr/lib/plexmediaserver/lib/*  ${BUILD_DIR}/lib
+find usr/lib/plexmediaserver -maxdepth 1 -type f | xargs -I {} cp {} ${BUILD_DIR}/bin
+cp -r usr/lib/plexmediaserver/lib/*  ${BUILD_DIR}/lib
 
 mkdir ${DIR}/build/${NAME}/META
 echo ${NAME} >> ${DIR}/build/${NAME}/META/app
