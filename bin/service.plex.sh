@@ -16,6 +16,7 @@ export PLEX_MEDIA_SERVER_INFO_MODEL=$(uname -m)
 export PLEX_MEDIA_SERVER_INFO_PLATFORM_VERSION=""
 export LD_LIBRARY_PATH=$DIR/lib
 export LC_ALL=C
+export PLEX_MEDIA_SERVER_USE_SYSLOG=true
 
 case $1 in
 start)
