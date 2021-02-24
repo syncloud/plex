@@ -36,9 +36,8 @@ cp -r ${DIR}/hooks ${BUILD_DIR}
 
 cd ${DIR}/build
 
-wget --progress=dot:giga https://downloads.plex.tv/plex-media-server-new/${PLEX_VERSION}/debian/plexmediaserver_${PLEX_VERSION}_${DEB_ARCH}.deb
-
-ar x plexmediaserver_${PLEX_VERSION}_armhf.deb
+wget --progress=dot:giga https://downloads.plex.tv/plex-media-server-new/${PLEX_VERSION}/debian/plexmediaserver_${PLEX_VERSION}_${DEB_ARCH}.deb -O plexmediaserver.deb
+ar x plexmediaserver.deb
 cp usr/lib/plexmediaserver/*  ${BUILD_DIR}/bin
 cp usr/lib/plexmediaserver/lib/*  ${BUILD_DIR}/lib
 
