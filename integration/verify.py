@@ -60,7 +60,7 @@ def test_install(app_archive_path, device_host, device_session, device_password)
 
 
 def test_index(app_domain):
-    response = requests.get('https://{0}'.format(app_domain), verify=False)
+    response = requests.get('https://{0}/web'.format(app_domain), verify=False)
     assert response.status_code == 200, response.text
 
 
