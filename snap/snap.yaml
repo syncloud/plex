@@ -1,0 +1,31 @@
+apps:
+  server:
+    user: plex
+    command: bin/service.plex.sh start
+    daemon: simple
+    start-timeout: 600s
+    plugs:
+    - network
+    - network-bind
+    restart-condition: always
+    before: [nginx]
+
+  nginx:
+    user: plex
+    command: bin/service.nginx.sh start
+    daemon: simple
+    plugs:
+    - network
+    - network-bind
+    restart-condition: always
+    start-timeout: 600s
+    stop-command: bin/service.nginx.sh stop
+
+  storage-change:
+    command: hooks/storage-change
+
+confinement: strict
+description: Plex
+grade: stable
+name: plex
+summary: Plex Media Server
