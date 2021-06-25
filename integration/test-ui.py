@@ -1,14 +1,9 @@
-import time
-from os.path import dirname, join
-from subprocess import check_output
-
 import pytest
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
+from os.path import dirname, join
 from selenium.webdriver.support.ui import WebDriverWait
+from subprocess import check_output
 from syncloudlib.integration.hosts import add_host_alias_by_ip
 from syncloudlib.integration.screenshots import screenshots
-from syncloudlib.integration.installer import local_install
 
 DIR = dirname(__file__)
 TMP_DIR = '/tmp/syncloud/ui'
@@ -36,26 +31,9 @@ def test_index(driver, app_domain, ui_mode, screenshot_dir):
     screenshots(driver, screenshot_dir, 'index-' + ui_mode)
 
 
-# def test_login(driver, app_domain, ui_mode, screenshot_dir, device_user, device_password):
-#     driver.get("https://{0}".format(app_domain))
-#     login = "//a[text()='Log In']"
-#     wait_or_screenshot(driver, ui_mode, screenshot_dir,
-#                        EC.presence_of_element_located((By.XPATH, login)))
-#     btn = driver.find_element_by_xpath(login)
-#     btn.click()
-#     user_xpath = "//input[@name='user_id']"
-#     wait_or_screenshot(driver, ui_mode, screenshot_dir,
-#                        EC.presence_of_element_located((By.XPATH, user_xpath)))
-#     user = driver.find_element_by_xpath(user_xpath)
-#     user.send_keys(device_user)
-#     password = driver.find_element_by_name("password")
-#     password.send_keys(device_password)
-#     screenshots(driver, screenshot_dir, 'login-credentials-' + ui_mode)
-#     password.submit()
-#     logout = "//a[text()='Log Out']"
-#     wait_or_screenshot(driver, ui_mode, screenshot_dir,
-#                        EC.presence_of_element_located((By.XPATH, logout)))
-#     screenshots(driver, screenshot_dir, 'main-' + ui_mode)
+def test_teardown(driver):
+    driver.quit()
+
 
 def wait_or_screenshot(driver, ui_mode, screenshot_dir, method):
     wait_driver = WebDriverWait(driver, 30)
