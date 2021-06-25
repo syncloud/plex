@@ -35,8 +35,8 @@ local build(arch) = {
               "cd integration",
               "py.test -x -s verify.py --domain=$DOMAIN --app-archive-path=$APP_ARCHIVE_PATH --device-host=device --app=" + name
             ]
-        },
-        if arch == "arm" then {} else
+        }
+    ]+ ( if arch == "arm" then [] else [
         {
             name: "test-ui-desktop",
             image: "syncloud/build-deps-" + arch,
@@ -51,7 +51,6 @@ local build(arch) = {
                 path: "/dev/shm"
             }]
         },
-        if arch == "arm" then {} else
         {
             name: "test-ui-mobile",
             image: "syncloud/build-deps-" + arch,
@@ -66,6 +65,7 @@ local build(arch) = {
                 path: "/dev/shm"
             }]
         },
+    ]) + [
         {
             name: "upload",
             image: "syncloud/build-deps-" + arch,
@@ -82,7 +82,11 @@ local build(arch) = {
               "PACKAGE=$(cat package.name)",
               "pip2 install -r dev_requirements.txt",
               "syncloud-upload.sh " + name + " $DRONE_BRANCH $VERSION $PACKAGE"
-            ]
+            ],
+            when: {
+              status: [ "failure", "success" ],
+              event: [ "push" ]
+            }
         },
         {
             name: "artifact",
@@ -102,7 +106,8 @@ local build(arch) = {
 		             strip_components: 1
             },
             when: {
-              status: [ "failure", "success" ]
+              status: [ "failure", "success" ],
+              event: [ "push" ]
             }
         }
     ],
