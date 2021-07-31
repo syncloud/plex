@@ -164,3 +164,9 @@ local build(arch, platform_image) = {
     build("amd64", "platform-amd64:21.01")
 ]
 
+ build("arm", "platform-jessie-arm"),
+    build("amd64", "platform-jessie-amd64"),
+    build("arm", "platform-arm:21.01"),
+    build("amd64", "platform-amd64:21.01")
+]
+

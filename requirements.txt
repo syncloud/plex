@@ -1,2 +1,2 @@
-syncloud-lib==195
+syncloud-lib==242
 requests==2.20.0
