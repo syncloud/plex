@@ -9,7 +9,8 @@ if [[ -z "$2" ]]; then
 fi
 
 NAME=$1
-PLEX_VERSION=1.24.4.5081-e362dc1ee
+PLEX_VERSION=1.24.5.5173-8dcc73a59
+
 
 ARCH=$(uname -m)
 DEB_ARCH=$(dpkg-architecture -q DEB_HOST_ARCH)
