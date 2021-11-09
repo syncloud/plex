@@ -1,7 +1,7 @@
 local name = "plex";
 local browser = "firefox";
 
-local build(arch, platform_image) = {
+local build(arch, testUI, platform_image) = {
     kind: "pipeline",
     type: "docker",
     name: platform_image,
@@ -12,15 +12,15 @@ local build(arch, platform_image) = {
     steps: [
         {
             name: "version",
-            image: "syncloud/build-deps-" + arch + ":2021.4.1",
+            image: "debian:buster-slim",
             commands: [
                 "echo $(date +%y%m%d)$DRONE_BUILD_NUMBER > version",
-                "echo example.com > domain"
+                "echo echo device.com > domain"
             ]
         },
         {
             name: "build",
-            image: "syncloud/build-deps-" + arch + ":2021.4.1",
+            image: "debian:buster-slim",
             commands: [
                 "VERSION=$(cat version)",
                 "./build.sh " + name + " $VERSION"
@@ -28,24 +28,24 @@ local build(arch, platform_image) = {
         },
         {
             name: "test-integration",
-            image: "python:3.9-buster",
+            image: "python:3.8-slim-buster",
             commands: [
               "apt-get update && apt-get install -y sshpass openssh-client netcat rustc file",
-              "pip install -r dev_requirements.txt",
               "APP_ARCHIVE_PATH=$(realpath $(cat package.name))",
               "DOMAIN=$(cat domain)",
               "cd integration",
+              "pip install -r dev_requirements.txt",
               "py.test -x -s verify.py --domain=$DOMAIN --app-archive-path=$APP_ARCHIVE_PATH --device-host=device --app=" + name
             ]
-        }] + ( if arch == "arm" then [] else [
+        }] + ( if testUI [
         {
             name: "test-ui-desktop",
-            image: "python:3.9-buster",
+            image: "python:3.8-slim-buster",
             commands: [
               "apt-get update && apt-get install -y sshpass openssh-client",
-              "pip install -r dev_requirements.txt",
               "DOMAIN=$(cat domain)",
               "cd integration",
+              "pip install -r dev_requirements.txt",
               "py.test -x -s test-ui.py --ui-mode=desktop --domain=$DOMAIN --device-host=device --app=" + name + " --browser=" + browser,
             ],
             volumes: [{
@@ -55,22 +55,22 @@ local build(arch, platform_image) = {
         },
         {
             name: "test-ui-mobile",
-            image: "python:3.9-buster",
+            image: "python:3.8-slim-buster",
             commands: [
               "apt-get update && apt-get install -y sshpass openssh-client",
-              "pip install -r dev_requirements.txt",
               "DOMAIN=$(cat domain)",
               "cd integration",
+              "pip install -r dev_requirements.txt",
               "py.test -x -s test-ui.py --ui-mode=mobile --domain=$DOMAIN --device-host=device --app=" + name + " --browser=" + browser,
             ],
             volumes: [{
                 name: "shm",
                 path: "/dev/shm"
             }]
-        }]) + [
+        }] else [] ) + [
         {
             name: "upload",
-            image: "python:3.9-buster",
+            image: "python:3.8-slim-buster",
             environment: {
                 AWS_ACCESS_KEY_ID: {
                     from_secret: "AWS_ACCESS_KEY_ID"
@@ -129,14 +129,14 @@ local build(arch, platform_image) = {
                 }
             ]
         }
-    ] + if arch == "arm" then [] else [{
+    ] + if testUI [{
             name: "selenium",
             image: "selenium/standalone-" + browser + ":4.0.0-beta-3-prerelease-20210402",
             volumes: [{
                 name: "shm",
                 path: "/dev/shm"
             }]
-        }],
+        }] else [],
     volumes: [
         {
             name: "dbus",
@@ -158,8 +158,7 @@ local build(arch, platform_image) = {
 };
 
 [
-    build("arm", "platform-jessie-arm"),
-    build("amd64", "platform-jessie-amd64"),
-    build("arm", "platform-arm:21.01"),
-    build("amd64", "platform-amd64:21.01")
+    build("arm", false, "platform-buster-arm:21.10"),
+    build("amd64", true, "platform-buster-amd64:21.10"),
+    build("arm64", false, "platform-buster-arm64:21.10")
 ]
