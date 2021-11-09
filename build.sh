@@ -11,25 +11,20 @@ fi
 NAME=$1
 PLEX_VERSION=1.24.5.5173-8dcc73a59
 
+apt update
+apt install -y dpkg-dev
 
 ARCH=$(uname -m)
 DEB_ARCH=$(dpkg-architecture -q DEB_HOST_ARCH)
 VERSION=$2
-DOWNLOAD_URL=https://github.com/syncloud/3rdparty/releases/download/1
+DOWNLOAD_URL=https://github.com/syncloud/3rdparty/releases/download
 
-rm -rf ${DIR}/build
 BUILD_DIR=${DIR}/build/${NAME}
 mkdir -p ${BUILD_DIR}
 
-wget --progress=dot:giga ${DOWNLOAD_URL}/python-${ARCH}.tar.gz
-tar xf python-${ARCH}.tar.gz
-mv python ${BUILD_DIR}
-
-wget --progress=dot:giga ${DOWNLOAD_URL}/nginx-${ARCH}.tar.gz
+wget --progress=dot:giga ${DOWNLOAD_URL}/nginx/nginx-${ARCH}.tar.gz
 tar xf nginx-${ARCH}.tar.gz
 mv nginx ${BUILD_DIR}/
-
-${BUILD_DIR}/python/bin/pip install -r ${DIR}/requirements.txt
 
 cp -r ${DIR}/bin ${BUILD_DIR}
 cp -r ${DIR}/config ${BUILD_DIR}/config.templates
