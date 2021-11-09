@@ -12,7 +12,7 @@ NAME=$1
 PLEX_VERSION=1.24.5.5173-8dcc73a59
 
 apt update
-apt install -y dpkg-dev
+apt install -y dpkg-dev wget
 
 ARCH=$(uname -m)
 DEB_ARCH=$(dpkg-architecture -q DEB_HOST_ARCH)
