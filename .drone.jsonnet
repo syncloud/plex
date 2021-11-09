@@ -37,7 +37,7 @@ local build(arch, testUI, platform_image) = {
               "pip install -r dev_requirements.txt",
               "py.test -x -s verify.py --domain=$DOMAIN --app-archive-path=$APP_ARCHIVE_PATH --device-host=device --app=" + name
             ]
-        }] + ( if testUI [
+        }] + ( if testUI then [
         {
             name: "test-ui-desktop",
             image: "python:3.8-slim-buster",
