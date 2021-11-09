@@ -51,7 +51,7 @@ local build(arch, testUI, platform_image) = {
               "APP_ARCHIVE_PATH=$(realpath $(cat package.name))",
               "DOMAIN=$(cat domain)",
               "cd integration",
-              "pip install -r dev_requirements.txt",
+              "pip install -r requirements.txt",
               "py.test -x -s verify.py --domain=$DOMAIN --app-archive-path=$APP_ARCHIVE_PATH --device-host=device --app=" + name
             ]
         }] + ( if testUI then [
@@ -62,7 +62,7 @@ local build(arch, testUI, platform_image) = {
               "apt-get update && apt-get install -y sshpass openssh-client",
               "DOMAIN=$(cat domain)",
               "cd integration",
-              "pip install -r dev_requirements.txt",
+              "pip install -r requirements.txt",
               "py.test -x -s test-ui.py --ui-mode=desktop --domain=$DOMAIN --device-host=device --app=" + name + " --browser=" + browser,
             ],
             volumes: [{
@@ -77,7 +77,7 @@ local build(arch, testUI, platform_image) = {
               "apt-get update && apt-get install -y sshpass openssh-client",
               "DOMAIN=$(cat domain)",
               "cd integration",
-              "pip install -r dev_requirements.txt",
+              "pip install -r requirements.txt",
               "py.test -x -s test-ui.py --ui-mode=mobile --domain=$DOMAIN --device-host=device --app=" + name + " --browser=" + browser,
             ],
             volumes: [{
