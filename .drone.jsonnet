@@ -132,7 +132,7 @@ local build(arch, testUI, platform_image) = {
     ],
     services: [
         {
-            name: "device",
+            name: "device.com",
             image: "syncloud/" + platform_image,
             privileged: true,
             volumes: [
