@@ -103,7 +103,6 @@ local build(arch, testUI, platform_image) = {
               "syncloud-upload.sh " + name + " $DRONE_BRANCH $VERSION $PACKAGE"
             ],
             when: {
-              status: [ "failure", "success" ],
               event: [ "push" ]
             }
         },
