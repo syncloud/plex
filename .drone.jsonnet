@@ -15,7 +15,7 @@ local build(arch, testUI, platform_image) = {
             image: "debian:buster-slim",
             commands: [
                 "echo $(date +%y%m%d)$DRONE_BUILD_NUMBER > version",
-                "echo echo device.com > domain"
+                "echo device.com > domain"
             ]
         },
        {
