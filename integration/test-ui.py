@@ -2,7 +2,7 @@ import pytest
 from os.path import dirname, join
 from selenium.webdriver.support.ui import WebDriverWait
 from subprocess import check_output
-from syncloudlib.integration.hosts import add_host_alias_by_ip
+from syncloudlib.integration.hosts import add_host_alias
 from syncloudlib.integration.screenshots import screenshots
 
 DIR = dirname(__file__)
@@ -23,7 +23,7 @@ def module_setup(request, device, artifact_dir, ui_mode):
 
 
 def test_start(module_setup, app, domain, device_host):
-    add_host_alias_by_ip(app, domain, device_host)
+    add_host_alias(app, domain, device_host)
 
 
 def test_index(driver, app_domain, ui_mode, screenshot_dir):
@@ -42,4 +42,3 @@ def wait_or_screenshot(driver, ui_mode, screenshot_dir, method):
     except Exception as e:
         screenshots(driver, screenshot_dir, 'exception-' + ui_mode)
         raise e
-
