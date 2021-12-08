@@ -9,7 +9,7 @@ if [[ -z "$2" ]]; then
 fi
 
 NAME=$1
-PLEX_VERSION=1.24.5.5173-8dcc73a59
+PLEX_VERSION=1.25.2.5319-c43dc0277
 
 apt update
 apt install -y dpkg-dev wget squashfs-tools dpkg-dev libltdl7
