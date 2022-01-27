@@ -1,10 +1,10 @@
 local name = "plex";
 local browser = "firefox";
 
-local build(arch, testUI, platform_image) = {
+local build(arch, testUI) = [{
     kind: "pipeline",
     type: "docker",
-    name: platform_image,
+    name: arch,
     platform: {
         os: "linux",
         arch: arch
@@ -129,10 +129,16 @@ local build(arch, testUI, platform_image) = {
             }
         }
     ],
+     trigger: {
+       event: [
+         "push",
+         "pull_request"
+       ]
+     },
     services: [
         {
             name: "device.com",
-            image: "syncloud/" + platform_image,
+            image: "syncloud/platform-buster-" + arch + ":21.10",
             privileged: true,
             volumes: [
                 {
@@ -183,10 +189,42 @@ local build(arch, testUI, platform_image) = {
             }
         }
     ]
-};
+},
+ {
+      kind: "pipeline",
+      type: "docker",
+      name: "promote-" + arch,
+      platform: {
+          os: "linux",
+          arch: arch
+      },
+      steps: [
+      {
+              name: "promote",
+              image: "debian:buster-slim",
+              environment: {
+                  AWS_ACCESS_KEY_ID: {
+                      from_secret: "AWS_ACCESS_KEY_ID"
+                  },
+                  AWS_SECRET_ACCESS_KEY: {
+                      from_secret: "AWS_SECRET_ACCESS_KEY"
+                  }
+              },
+              commands: [
+                "apt update && apt install -y wget",
+                "wget https://github.com/syncloud/snapd/releases/download/1/syncloud-release-" + arch + " -O release --progress=dot:giga",
+                "chmod +x release",
+                "./release promote -n " + name + " -a $(dpkg --print-architecture)"
+              ]
+        }
+       ],
+       trigger: {
+        event: [
+          "promote"
+        ]
+      }
+  }];
 
-[
-    build("arm", false, "platform-buster-arm:21.10"),
-    build("amd64", true, "platform-buster-amd64:21.10"),
-    build("arm64", false, "platform-buster-arm64:21.10")
-]
+build("arm", false) +
+build("amd64", true) +
+build("arm64", false)
