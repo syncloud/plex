@@ -105,7 +105,8 @@ local build(arch, testUI) = [{
          ],
         when: {
             branch: ["stable", "master"]
-        },
+        }
+	},
         {
             name: "artifact",
             image: "appleboy/drone-scp:1.6.2",
