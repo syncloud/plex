@@ -104,7 +104,8 @@ local build(arch, testUI) = [{
           "./syncloud-release-* publish -f $PACKAGE -b $DRONE_BRANCH"
          ],
         when: {
-            branch: ["stable", "master"]
+            branch: ["stable", "master"],
+	    event: ["push"]
         }
 	},
         {
