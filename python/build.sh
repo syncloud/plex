@@ -2,8 +2,6 @@
 
 DIR=$( cd "$( dirname "$0" )" && pwd )
 cd ${DIR}
-apt update
-apt install -y libltdl7 libnss3
 
 BUILD_DIR=${DIR}/../build/plex/python
 docker ps -a -q --filter ancestor=python:syncloud --format="{{.ID}}" | xargs docker stop | xargs docker rm || true
