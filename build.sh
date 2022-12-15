@@ -9,7 +9,7 @@ if [[ -z "$2" ]]; then
 fi
 
 NAME=$1
-PLEX_VERSION=1.29.1.6316-f4cdfea9c
+PLEX_VERSION=1.30.0.6486-629d58034
 
 
 apt update
