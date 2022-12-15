@@ -1,7 +1,9 @@
 local name = "plex";
 local browser = "firefox";
+local selenium = "4.0.0-beta-3-prerelease-20210402";
+local platform = "22.01";
 
-local build(arch, testUI) = [{
+local build(arch, testUI, dind) = [{
     kind: "pipeline",
     type: "docker",
     name: arch,
@@ -20,18 +22,14 @@ local build(arch, testUI) = [{
         },
        {
             name: "build python",
-            image: "debian:buster-slim",
+            image: "docker:" + dind,
             commands: [
                 "./python/build.sh"
             ],
             volumes: [
                 {
-                    name: "docker",
-                    path: "/usr/bin/docker"
-                },
-                {
-                    name: "docker.sock",
-                    path: "/var/run/docker.sock"
+                    name: "dockersock",
+                    path: "/var/run"
                 }
             ]
         },
@@ -110,7 +108,7 @@ local build(arch, testUI) = [{
 	},
         {
             name: "artifact",
-            image: "appleboy/drone-scp:1.6.2",
+            image: "appleboy/drone-scp:1.6.4",
             settings: {
                 host: {
                     from_secret: "artifact_host"
@@ -139,8 +137,19 @@ local build(arch, testUI) = [{
      },
     services: [
         {
+            name: "docker",
+            image: "docker:" + dind,
+            privileged: true,
+            volumes: [
+                {
+                    name: "dockersock",
+                    path: "/var/run"
+                }
+            ]
+        },
+        {
             name: "device.com",
-            image: "syncloud/platform-buster-" + arch + ":21.10",
+            image: "syncloud/platform-buster-" + arch + ":" + platform,
             privileged: true,
             volumes: [
                 {
@@ -155,7 +164,7 @@ local build(arch, testUI) = [{
         }
     ] + if testUI then [{
             name: "selenium",
-            image: "selenium/standalone-" + browser + ":4.0.0-beta-3-prerelease-20210402",
+            image: "selenium/standalone-" + browser + ":" + selenium,
             volumes: [{
                 name: "shm",
                 path: "/dev/shm"
@@ -179,16 +188,8 @@ local build(arch, testUI) = [{
             temp: {}
         },
         {
-            name: "docker",
-            host: {
-                path: "/usr/bin/docker"
-            }
-        },
-        {
-            name: "docker.sock",
-            host: {
-                path: "/var/run/docker.sock"
-            }
+            name: "dockersock",
+            temp: {}
         }
     ]
 },
@@ -227,6 +228,6 @@ local build(arch, testUI) = [{
       }
   }];
 
-build("arm", false) +
-build("amd64", true) +
-build("arm64", false)
+build("amd64", true, "20.10.21-dind") +
+build("arm64", false, "19.03.8-dind") +
+build("arm", false, "19.03.8-dind")

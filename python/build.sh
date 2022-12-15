@@ -1,6 +1,6 @@
-#!/bin/bash -ex
+#!/bin/sh -ex
 
-DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+DIR=$( cd "$( dirname "$0" )" && pwd )
 cd ${DIR}
 apt update
 apt install -y libltdl7 libnss3
