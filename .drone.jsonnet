@@ -2,6 +2,7 @@ local name = "plex";
 local browser = "firefox";
 local selenium = "4.0.0-beta-3-prerelease-20210402";
 local platform = "22.01";
+local plex = "1.30.0.6486-629d58034";
 
 local build(arch, testUI, dind) = [{
     kind: "pipeline",
@@ -21,13 +22,13 @@ local build(arch, testUI, dind) = [{
             ]
         },
         {
-            name: "build",                                          image: "debian:buster-slim",
-            commands: [
-                "VERSION=$(cat version)",
-                "./build.sh " + name + " $VERSION"
-            ]
+               name: "build",
+               image: "debian:buster-slim",
+               commands: [
+                   "./build.sh " + plex
+               ]
         },
-	{
+	    {
             name: "build python",
             image: "docker:" + dind,
             commands: [
@@ -38,6 +39,14 @@ local build(arch, testUI, dind) = [{
                     name: "dockersock",
                     path: "/var/run"
                 }
+            ]
+        },
+       {
+            name: "package",
+            image: "debian:buster-slim",
+            commands: [
+               "VERSION=$(cat version)",
+               "./package.sh " + name + " $VERSION "
             ]
         },
         {

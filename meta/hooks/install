@@ -2,5 +2,4 @@
 
 import os, sys
 sys.path.append(os.path.join(os.environ['SNAP'], 'hooks'))
-import installer
-installer.Installer().install()
+meta.hooks.install()
