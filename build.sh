@@ -5,13 +5,12 @@ cd ${DIR}
 
 VERSION=$1
 
-ARCH=$(uname -m)
-DEB_ARCH=$(dpkg-architecture -q DEB_HOST_ARCH)
-DOWNLOAD_URL=https://github.com/syncloud/3rdparty/releases/download
-
 apt update
 apt install -y dpkg-dev wget
 
+ARCH=$(uname -m)
+DEB_ARCH=$(dpkg-architecture -q DEB_HOST_ARCH)
+DOWNLOAD_URL=https://github.com/syncloud/3rdparty/releases/download
 BUILD_DIR=${DIR}/build/snap
 mkdir -p $BUILD_DIR
 
