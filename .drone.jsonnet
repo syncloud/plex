@@ -20,7 +20,14 @@ local build(arch, testUI, dind) = [{
                 "echo device.com > domain"
             ]
         },
-       {
+        {
+            name: "build",                                          image: "debian:buster-slim",
+            commands: [
+                "VERSION=$(cat version)",
+                "./build.sh " + name + " $VERSION"
+            ]
+        },
+	{
             name: "build python",
             image: "docker:" + dind,
             commands: [
@@ -31,14 +38,6 @@ local build(arch, testUI, dind) = [{
                     name: "dockersock",
                     path: "/var/run"
                 }
-            ]
-        },
-        {
-            name: "build",
-            image: "debian:buster-slim",
-            commands: [
-                "VERSION=$(cat version)",
-                "./build.sh " + name + " $VERSION"
             ]
         },
         {
