@@ -17,7 +17,7 @@ apt install -y dpkg-dev squashfs-tools dpkg-dev
 ARCH=$(dpkg-architecture -q DEB_HOST_ARCH)
 
 SNAP_DIR=${DIR}/build/snap
-mkdir -p ${BUILD_DIR}
+mkdir -p ${SNAP_DIR}
 
 cp -r ${DIR}/bin ${SNAP_DIR}
 cp -r ${DIR}/config ${SNAP_DIR}
