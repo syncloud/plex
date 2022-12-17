@@ -3,7 +3,7 @@
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 cd ${DIR}
 
-VERSION=$1
+VERSION=$1 # defined at the top of the .drone.jsonnet file now
 
 apt update
 apt install -y wget binutils xz-utils
