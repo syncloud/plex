@@ -68,3 +68,7 @@ def test_remove(device, app):
 
 def test_reinstall(app_archive_path, domain, device_password):
     local_install(domain, device_password, app_archive_path)
+
+
+def test_refresh(app_archive_path, domain, device_password):
+    local_install(domain, device_password, app_archive_path)

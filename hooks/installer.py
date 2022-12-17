@@ -50,7 +50,7 @@ class Installer:
     def install(self):
         self.install_config()
 
-    def refresh(self):
+    def post_refresh(self):
         self.install_config()
         
     def configure(self):
