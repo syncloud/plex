@@ -6,7 +6,7 @@ cd ${DIR}
 VERSION=$1
 
 apt update
-apt install -y wget
+apt install -y wget binutils
 
 ARCH=$(uname -m)
 DEB_ARCH=$(dpkg --print-architecture)
