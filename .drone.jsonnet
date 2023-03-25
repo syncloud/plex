@@ -2,7 +2,7 @@ local name = "plex";
 local browser = "firefox";
 local selenium = "4.0.0-beta-3-prerelease-20210402";
 local platform = "22.01";
-local plex = "1.31.1.6782-77dfff442";
+local plex = "1.31.2.6810-a607d384f";
 
 local build(arch, testUI, dind) = [{
     kind: "pipeline",
