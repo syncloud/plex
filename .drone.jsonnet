@@ -17,8 +17,7 @@ local build(arch, testUI, dind) = [{
             name: "version",
             image: "debian:buster-slim",
             commands: [
-                "echo $DRONE_BUILD_NUMBER > version",
-                "echo device.com > domain"
+                "echo $DRONE_BUILD_NUMBER > version"
             ]
         },
         {
@@ -53,23 +52,19 @@ local build(arch, testUI, dind) = [{
             name: "test-integration",
             image: "python:3.8-slim-buster",
             commands: [
-              "apt-get update && apt-get install -y sshpass openssh-client netcat rustc file",
               "APP_ARCHIVE_PATH=$(realpath $(cat package.name))",
-              "DOMAIN=$(cat domain)",
               "cd integration",
-              "pip install -r requirements.txt",
-              "py.test -x -s verify.py --domain=$DOMAIN --app-archive-path=$APP_ARCHIVE_PATH --device-host=device --app=" + name
+              "./deps.sh",
+              "py.test -x -s verify.py --app-archive-path=$APP_ARCHIVE_PATH --device-host=device --app=" + name
             ]
         }] + ( if testUI then [
         {
             name: "test-ui-desktop",
             image: "python:3.8-slim-buster",
             commands: [
-              "apt-get update && apt-get install -y sshpass openssh-client",
-              "DOMAIN=$(cat domain)",
               "cd integration",
-              "pip install -r requirements.txt",
-              "py.test -x -s test-ui.py --ui-mode=desktop --domain=$DOMAIN --device-host=device --app=" + name + " --browser=" + browser,
+              "./deps.sh",
+              "py.test -x -s test-ui.py --ui-mode=desktop --device-host=device --app=" + name + " --browser=" + browser,
             ],
             volumes: [{
                 name: "shm",
@@ -80,11 +75,9 @@ local build(arch, testUI, dind) = [{
             name: "test-ui-mobile",
             image: "python:3.8-slim-buster",
             commands: [
-              "apt-get update && apt-get install -y sshpass openssh-client",
-              "DOMAIN=$(cat domain)",
               "cd integration",
-              "pip install -r requirements.txt",
-              "py.test -x -s test-ui.py --ui-mode=mobile --domain=$DOMAIN --device-host=device --app=" + name + " --browser=" + browser,
+              "./deps.sh",
+              "py.test -x -s test-ui.py --ui-mode=mobile --device-host=device --app=" + name + " --browser=" + browser,
             ],
             volumes: [{
                 name: "shm",
