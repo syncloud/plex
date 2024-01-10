@@ -12,14 +12,13 @@ apps:
 
   nginx:
     user: plex
-    command: bin/service.nginx.sh start
+    command: bin/service.nginx.sh
     daemon: simple
     plugs:
     - network
     - network-bind
     restart-condition: always
     start-timeout: 600s
-    stop-command: bin/service.nginx.sh stop
 
   storage-change:
     command: hooks/storage-change
