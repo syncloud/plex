@@ -93,6 +93,9 @@ local build(arch, testUI, dind) = [{
             },
             AWS_SECRET_ACCESS_KEY: {
                 from_secret: "AWS_SECRET_ACCESS_KEY"
+            },
+            SYNCLOUD_TOKEN: {
+                from_secret: "SYNCLOUD_TOKEN"
             }
         },
         commands: [
