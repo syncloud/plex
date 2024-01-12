@@ -3,7 +3,7 @@ local browser = "firefox";
 local selenium = "4.0.0-beta-3-prerelease-20210402";
 local platform = "22.01";
 local plex = "1.32.7.7621-871adbd44";
-local release = "4";
+local deployer = "https://github.com/syncloud/store/releases/download/4/syncloud-release";
 
 local build(arch, testUI, dind) = [{
     kind: "pipeline",
@@ -102,7 +102,7 @@ local build(arch, testUI, dind) = [{
         commands: [
           "PACKAGE=$(cat package.name)",
           "apt update && apt install -y wget",
-          "wget https://github.com/syncloud/store/releases/download/" + release + "/syncloud-release-" + arch + " -O release --progress=dot:giga",
+          "wget " + deployer + "-" + arch + " -O release --progress=dot:giga",
           "chmod +x release",
           "./release publish -f $PACKAGE -b $DRONE_BRANCH"
          ],
@@ -220,7 +220,7 @@ local build(arch, testUI, dind) = [{
                },
                commands: [
                  "apt update && apt install -y wget",
-                 "wget https://github.com/syncloud/snapd/releases/download/" + release + "/syncloud-release-" + arch + " -O release --progress=dot:giga",
+                 "wget " + deployer + "-" + arch + " -O release --progress=dot:giga",
                  "chmod +x release",
                  "./release promote -n " + name + " -a $(dpkg --print-architecture)"
                ]
