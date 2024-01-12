@@ -135,7 +135,7 @@ local build(arch, testUI, dind) = [{
                    branch: ["stable"],
                    event: ["push"]
                }
-         }
+         },
         {
             name: "artifact",
             image: "appleboy/drone-scp:1.6.4",
