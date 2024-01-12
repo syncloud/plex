@@ -87,30 +87,55 @@ local build(arch, testUI, dind) = [{
         }] else [] ) + [
         {
             name: "upload",
-        image: "debian:buster-slim",
-        environment: {
-            AWS_ACCESS_KEY_ID: {
-                from_secret: "AWS_ACCESS_KEY_ID"
+            image: "debian:buster-slim",
+            environment: {
+                AWS_ACCESS_KEY_ID: {
+                    from_secret: "AWS_ACCESS_KEY_ID"
+                },
+                AWS_SECRET_ACCESS_KEY: {
+                    from_secret: "AWS_SECRET_ACCESS_KEY"
+                },
+                SYNCLOUD_TOKEN: {
+                    from_secret: "SYNCLOUD_TOKEN"
+                }
             },
-            AWS_SECRET_ACCESS_KEY: {
-                from_secret: "AWS_SECRET_ACCESS_KEY"
-            },
-            SYNCLOUD_TOKEN: {
-                from_secret: "SYNCLOUD_TOKEN"
+            commands: [
+              "PACKAGE=$(cat package.name)",
+              "apt update && apt install -y wget",
+              "wget " + deployer + "-" + arch + " -O release --progress=dot:giga",
+              "chmod +x release",
+              "./release publish -f $PACKAGE -b $DRONE_BRANCH"
+             ],
+            when: {
+                branch: ["stable", "master"],
+                event: ["push"]
             }
-        },
-        commands: [
-          "PACKAGE=$(cat package.name)",
-          "apt update && apt install -y wget",
-          "wget " + deployer + "-" + arch + " -O release --progress=dot:giga",
-          "chmod +x release",
-          "./release publish -f $PACKAGE -b $DRONE_BRANCH"
-         ],
-        when: {
-            branch: ["stable", "master"],
-	    event: ["push"]
-        }
-	},
+	    },
+	    {
+               name: "promote",
+               image: "debian:buster-slim",
+               environment: {
+                   AWS_ACCESS_KEY_ID: {
+                       from_secret: "AWS_ACCESS_KEY_ID"
+                   },
+                   AWS_SECRET_ACCESS_KEY: {
+                       from_secret: "AWS_SECRET_ACCESS_KEY"
+                   },
+                    SYNCLOUD_TOKEN: {
+                        from_secret: "SYNCLOUD_TOKEN"
+                    }
+               },
+               commands: [
+                 "apt update && apt install -y wget",
+                 "wget " + deployer + "-" + arch + " -O release --progress=dot:giga",
+                 "chmod +x release",
+                 "./release promote -n " + name + " -a $(dpkg --print-architecture)"
+               ],
+               when: {
+                   branch: ["stable"],
+                   event: ["push"]
+               }
+         }
         {
             name: "artifact",
             image: "appleboy/drone-scp:1.6.4",
@@ -197,41 +222,7 @@ local build(arch, testUI, dind) = [{
             temp: {}
         }
     ]
-},
-  {
-       kind: "pipeline",
-       type: "docker",
-       name: "promote-" + arch,
-       platform: {
-           os: "linux",
-           arch: arch
-       },
-       steps: [
-       {
-               name: "promote",
-               image: "debian:buster-slim",
-               environment: {
-                   AWS_ACCESS_KEY_ID: {
-                       from_secret: "AWS_ACCESS_KEY_ID"
-                   },
-                   AWS_SECRET_ACCESS_KEY: {
-                       from_secret: "AWS_SECRET_ACCESS_KEY"
-                   }
-               },
-               commands: [
-                 "apt update && apt install -y wget",
-                 "wget " + deployer + "-" + arch + " -O release --progress=dot:giga",
-                 "chmod +x release",
-                 "./release promote -n " + name + " -a $(dpkg --print-architecture)"
-               ]
-         }
-        ],
-        trigger: {
-         event: [
-           "promote"
-         ]
-       }
-   }];
+}];
 
 build("amd64", true, "20.10.21-dind") +
 build("arm64", false, "19.03.8-dind") +
