@@ -101,7 +101,7 @@ local build(arch, testUI, dind) = [{
         commands: [
           "PACKAGE=$(cat package.name)",
           "apt update && apt install -y wget",
-          "wget https://github.com/syncloud/store/releases/download/2/syncloud-release-" + arch,
+          "wget https://github.com/syncloud/store/releases/download/3/syncloud-release-" + arch,
           "chmod +x syncloud-release-*",
           "./syncloud-release-* publish -f $PACKAGE -b $DRONE_BRANCH"
          ],
