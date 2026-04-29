@@ -5,6 +5,7 @@ from subprocess import check_output
 
 import pytest
 import requests
+from syncloudlib.http import wait_for_rest
 from syncloudlib.integration.hosts import add_host_alias
 from syncloudlib.integration.installer import local_install, wait_for_installer
 
@@ -42,8 +43,8 @@ def module_setup(request, device, data_dir, platform_data_dir, app_dir, artifact
 
 
 def test_start(module_setup, device, device_host, app, domain, log_dir):
-    add_host_alias(app, domain, device_host)
-    device.run_ssh('date', retries=20)
+    add_host_alias(app, device_host, domain)
+    device.run_ssh('date', retries=6)
 
 
 def test_activate_device(device):
@@ -57,8 +58,14 @@ def test_install(app_archive_path, domain, device_session, device_password):
 
 
 def test_index(app_domain):
-    response = requests.get('https://{0}/web'.format(app_domain), verify=False)
-    assert response.status_code == 200, response.text
+    wait_for_rest(requests.session(), 'https://{0}/web'.format(app_domain), 200, 100)
+
+
+def test_services_restart(device, app_domain):
+    device.run_ssh('snap restart plex')
+    device.run_ssh('systemctl is-active snap.plex.nginx.service')
+    device.run_ssh('systemctl is-active snap.plex.server.service')
+    wait_for_rest(requests.session(), 'https://{0}/web'.format(app_domain), 200, 100)
 
 
 def test_remove(device, app):
