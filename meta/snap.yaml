@@ -38,7 +38,7 @@ apps:
     command: bin/cli restore-post-start
 
 confinement: strict
-description: Plex
+description: Free movies and TV plus all your personal media libraries on every device. Master your Mediaverse
 grade: stable
 name: plex
 summary: Plex Media Server
