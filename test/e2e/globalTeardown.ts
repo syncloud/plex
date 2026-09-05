@@ -4,7 +4,7 @@ import * as path from 'node:path'
 import * as fs from 'node:fs'
 import { execSync } from 'node:child_process'
 
-const TMP_DIR = '/tmp/syncloud/plex-ui'
+const TMP_DIR = '/tmp/plex-e2e'
 
 export default async function () {
   const out = path.join(env('PLAYWRIGHT_ARTIFACT_DIR'), 'playwright', env('PLAYWRIGHT_PROJECT'))
