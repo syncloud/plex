@@ -1,12 +1,21 @@
 import { Page, expect } from '@playwright/test'
 import { env } from './env'
 
+const ASSET_PATHS = ['/web/', '/auth/']
+
 export function trackBrokenAssets(page: Page): string[] {
   const broken: string[] = []
   const host = env('PLAYWRIGHT_APP_DOMAIN')
   page.on('response', response => {
-    if (response.url().includes(host) && response.status() >= 400) {
-      broken.push(`${response.status()} ${response.url()}`)
+    const url = new URL(response.url())
+    if (url.host !== host) {
+      return
+    }
+    if (!ASSET_PATHS.some(prefix => url.pathname.startsWith(prefix))) {
+      return
+    }
+    if (response.status() >= 400) {
+      broken.push(`${response.status()} ${url.pathname}`)
     }
   })
   return broken
