@@ -130,6 +130,27 @@ Every step is a committed script — `./nginx/build.sh`, `./plex/build.sh <versi
 
 UI tests run under Playwright (`mcr.microsoft.com/playwright:v1.59.1-jammy`). Plex ships no SPA of its own, so the specs live in `test/e2e/specs/` and are driven by `test/e2e/run.sh`, which runs each spec against both the `desktop` and `mobile` projects. Screenshots, videos and the device journal land in `artifact/<subdir>/playwright/<project>/`.
 
+## The e2e screenshots say "Plex is not reachable" — that is expected
+
+Plex signs in against plex.tv, not Syncloud SSO, so there is no authenticated UI
+to drive without a real Plex account and the specs cover exactly one thing: the
+snap serves its bundled web client correctly (the client mounts into `#plex`,
+the splash assets decode, and nothing under `/web/` or `/auth/` returns >= 400).
+
+`openWebClient()` aborts every off-origin request, so the run is hermetic and
+plex.tv cannot fail the build. The desktop client reacts to that by rendering
+"We are unable to connect to plex.tv at this time" — an accurate description of
+an isolated test environment, not a broken package.
+
+Do not try to "fix" this by letting the client reach plex.tv. Both alternatives
+were tried and are worse:
+- allow everything: the desktop client navigates the top-level page to
+  `app.plex.tv`, and `page.screenshot` races the navigation
+  (`Protocol error (Page.captureScreenshot): Unable to capture screenshot`).
+- abort only main-frame navigation: the client retries the redirect in a loop,
+  the page never settles, and the test burns its full 420s timeout in
+  `page.screenshot`.
+
 Notes:
 - `--trusted` is required for privileged/volume steps
 - `--include` selects only listed steps (in pipeline order); omit to run all steps

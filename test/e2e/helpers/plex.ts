@@ -24,11 +24,11 @@ export function trackBrokenAssets(page: Page): string[] {
 async function keepOnDevice(page: Page) {
   const host = env('PLAYWRIGHT_APP_DOMAIN')
   await page.route('**/*', route => {
-    const request = route.request()
-    if (!request.isNavigationRequest() || request.frame() !== page.mainFrame()) {
+    const url = new URL(route.request().url())
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
       return route.continue()
     }
-    return new URL(request.url()).host === host ? route.continue() : route.abort()
+    return url.host === host ? route.continue() : route.abort()
   })
 }
 
