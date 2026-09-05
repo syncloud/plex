@@ -65,30 +65,36 @@ curl -s "http://ci.syncloud.org:8081/files/plex/{build}-{arch}/"
 
 **For integration test failures, fetch `journalctl.log` directly from the artifact server — do not add stdout dumps to the test teardown.** The teardown already captures the journal and `scp_from_device`s it into the artifact dir; the drone-scp `artifact` step then uploads the whole directory to `ci.syncloud.org:8081`. Only when port 8081 is itself down (rare; the artifact step will be in `failure`) do you need an alternative.
 
-Each distro dir contains `app/`, `platform/`, and for upgrade/UI tests also `desktop/`, `refresh.journalctl.log`, `video.mkv`:
+Each distro dir holds the pytest artifacts; each Playwright step writes its own top-level dir named after the artifact subdir it was given:
 ```
 curl -s "http://ci.syncloud.org:8081/files/plex/{build}-{arch}/{distro}/"
-curl -s "http://ci.syncloud.org:8081/files/plex/{build}-{arch}/{distro}/app/"
-curl -s "http://ci.syncloud.org:8081/files/plex/{build}-{arch}/{distro}/desktop/"
+curl -s "http://ci.syncloud.org:8081/files/plex/{build}-{arch}/e2e/playwright/desktop/"
 ```
 
 Directory structure:
 ```
 {build}-{arch}/
   {distro}/
-    app/
+    log/
       journalctl.log          # full journal from integration test teardown
       ps.log, netstat.log     # process/network state at teardown
-    platform/                 # platform logs
-    desktop/                  # UI test artifacts (amd64 only)
-    mobile/                   # UI test artifacts for mobile project
+    platform_log/             # platform logs
     refresh.journalctl.log    # full journal from upgrade test (pre/post-refresh)
+  e2e/                        # Playwright, post-install smoke (amd64 only)
+  e2e-before-upgrade/         # Playwright, on the previously released version
+  e2e-after-upgrade/          # Playwright, after refreshing to this build
+    playwright/
+      {desktop,mobile}/
+        screenshot/           # shoot() PNGs + page HTML
+        journalctl.log        # device journal from globalTeardown
+      test-results/           # traces and videos
+  machine-identifier.txt      # recorded pre-upgrade, asserted post-upgrade
 ```
 
 Download a file directly:
 ```
-curl -O "http://ci.syncloud.org:8081/files/plex/{build}-amd64/buster/app/journalctl.log"
-curl -O "http://ci.syncloud.org:8081/files/plex/{build}-amd64/bookworm/desktop/journalctl.log"
+curl -O "http://ci.syncloud.org:8081/files/plex/{build}-amd64/buster/log/journalctl.log"
+curl -O "http://ci.syncloud.org:8081/files/plex/{build}-amd64/e2e/playwright/desktop/journalctl.log"
 ```
 
 # Running Drone builds locally
@@ -103,18 +109,26 @@ Generate `.drone.yml` from jsonnet (run from project root):
 Run a specific pipeline with selected steps (e.g. amd64 up to `test bookworm`):
 ```
 ../drone-cli/drone exec --pipeline amd64 --trusted \
-  --include version \
-  --include build \
+  --include nginx \
+  --include plex \
   --include cli \
+  --include "nginx test bookworm" \
+  --include "plex test bookworm" \
+  --include "cli test bookworm" \
   --include package \
   --include "test bookworm" \
   --include "test buster" \
-  --include test-ui-desktop \
+  --include e2e \
+  --include test-upgrade-prev \
+  --include e2e-before-upgrade \
   --include test-upgrade \
+  --include e2e-after-upgrade \
   .drone.yml
 ```
 
-UI tests run under Playwright (`mcr.microsoft.com/playwright:v1.59.1-jammy`). Selenium has been removed — `web/e2e/*.spec.ts` are the e2e tests, driven by `ci/ui.sh`. Reports land in `artifact/desktop/playwright-report/`.
+Every step is a committed script — `./nginx/build.sh`, `./plex/build.sh <version>`, `./cli/build.sh`, `./package.sh plex <build>`, `./ci/test.sh <spec> <distro> plex`, `./test/e2e/run.sh <artifact-subdir> <spec>` — so each reproduces locally with the same command CI runs.
+
+UI tests run under Playwright (`mcr.microsoft.com/playwright:v1.59.1-jammy`). Plex ships no SPA of its own, so the specs live in `test/e2e/specs/` and are driven by `test/e2e/run.sh`, which runs each spec against both the `desktop` and `mobile` projects. Screenshots, videos and the device journal land in `artifact/<subdir>/playwright/<project>/`.
 
 Notes:
 - `--trusted` is required for privileged/volume steps

@@ -1,14 +1,17 @@
 local name = 'plex';
-local plex = '1.43.1.10611-1e34174b1';
-local nginx = '1.24.0';
+local plex = '1.43.3.10896-cb3ebc72d';
+local nginx = '1.30.4';
 local debian = 'bookworm-slim';
-local platform = '26.04.10';
-local playwright = 'v1.59.1-jammy';
+local platform = '26.08.01';
+local playwright = 'mcr.microsoft.com/playwright:v1.59.1-jammy';
 local store_publisher = 'stable-346';
 local python = '3.12-slim-bookworm';
-local go = '1.25';
+local golang = '1.27';
 local distro_default = 'bookworm';
 local distros = ['bookworm', 'buster'];
+
+local platform_image(distro) =
+  'syncloud/platform-' + distro + ':' + platform;
 
 local build(arch, test_ui) = [{
   kind: 'pipeline',
@@ -20,13 +23,6 @@ local build(arch, test_ui) = [{
   },
   steps: [
     {
-      name: 'version',
-      image: 'debian:' + debian,
-      commands: [
-        'echo $DRONE_BUILD_NUMBER > version',
-      ],
-    },
-    {
       name: 'nginx',
       image: 'nginx:' + nginx,
       commands: [
@@ -34,37 +30,52 @@ local build(arch, test_ui) = [{
       ],
     },
     {
-      name: 'nginx test',
-      image: 'syncloud/platform-' + distro_default + '-' + arch + ':' + platform,
-      commands: [
-        './nginx/test.sh',
-      ],
-    },
-    {
-      name: 'build',
+      name: 'plex',
       image: 'debian:' + debian,
       commands: [
-        './build.sh ' + plex,
+        './plex/build.sh ' + plex,
       ],
     },
     {
       name: 'cli',
-      image: 'golang:' + go,
+      image: 'golang:' + golang,
       commands: [
-        'cd cli',
-        'CGO_ENABLED=0 go build -o ../build/snap/meta/hooks/install ./cmd/install',
-        'CGO_ENABLED=0 go build -o ../build/snap/meta/hooks/configure ./cmd/configure',
-        'CGO_ENABLED=0 go build -o ../build/snap/meta/hooks/pre-refresh ./cmd/pre-refresh',
-        'CGO_ENABLED=0 go build -o ../build/snap/meta/hooks/post-refresh ./cmd/post-refresh',
-        'CGO_ENABLED=0 go build -o ../build/snap/bin/cli ./cmd/cli',
+        './cli/build.sh',
       ],
     },
+  ] + [
+    {
+      name: 'nginx test ' + distro,
+      image: platform_image(distro),
+      commands: [
+        './nginx/test.sh',
+      ],
+    }
+    for distro in distros
+  ] + [
+    {
+      name: 'plex test ' + distro,
+      image: platform_image(distro),
+      commands: [
+        './plex/test.sh',
+      ],
+    }
+    for distro in distros
+  ] + [
+    {
+      name: 'cli test ' + distro,
+      image: platform_image(distro),
+      commands: [
+        './cli/test.sh',
+      ],
+    }
+    for distro in distros
+  ] + [
     {
       name: 'package',
       image: 'debian:' + debian,
       commands: [
-        'VERSION=$(cat version)',
-        './package.sh ' + name + ' $VERSION ',
+        './package.sh ' + name + ' $DRONE_BUILD_NUMBER',
       ],
     },
   ] + [
@@ -72,31 +83,47 @@ local build(arch, test_ui) = [{
       name: 'test ' + distro,
       image: 'python:' + python,
       commands: [
-        'cd test',
-        './deps.sh',
-        'py.test -x -s test.py --distro=' + distro + ' --ver=$DRONE_BUILD_NUMBER --app=' + name,
+        './ci/test.sh test.py ' + distro + ' ' + name,
       ],
     }
     for distro in distros
   ] + (if test_ui then [
-    {
-      name: 'test-ui-desktop',
-      image: 'mcr.microsoft.com/playwright:' + playwright,
-      commands: [
-        './ci/ui.sh desktop ' + name + ' ' + distro_default + ' $DRONE_BUILD_NUMBER',
-      ],
-    },
-    {
-      name: 'test-upgrade',
-      image: 'python:' + python,
-      commands: [
-        'cd test',
-        './deps.sh',
-        'py.test -x -s upgrade.py --distro=' + distro_default + ' --ver=$DRONE_BUILD_NUMBER --app=' + name,
-      ],
-      privileged: true,
-    },
-  ] else []) + [
+         {
+           name: 'e2e',
+           image: playwright,
+           commands: [
+             './test/e2e/run.sh e2e specs/01-smoke.spec.ts',
+           ],
+         },
+         {
+           name: 'test-upgrade-prev',
+           image: 'python:' + python,
+           commands: [
+             './ci/test.sh upgrade_prev.py ' + distro_default + ' ' + name,
+           ],
+         },
+         {
+           name: 'e2e-before-upgrade',
+           image: playwright,
+           commands: [
+             './test/e2e/run.sh e2e-before-upgrade specs/02-pre-upgrade.spec.ts',
+           ],
+         },
+         {
+           name: 'test-upgrade',
+           image: 'python:' + python,
+           commands: [
+             './ci/test.sh upgrade.py ' + distro_default + ' ' + name,
+           ],
+         },
+         {
+           name: 'e2e-after-upgrade',
+           image: playwright,
+           commands: [
+             './test/e2e/run.sh e2e-after-upgrade specs/03-post-upgrade.spec.ts',
+           ],
+         },
+       ] else []) + [
     {
       name: 'publish',
       image: 'syncloud/store-publisher:' + store_publisher,
@@ -119,23 +146,23 @@ local build(arch, test_ui) = [{
         timeout: '2m',
         command_timeout: '2m',
         target: '/home/artifact/repo/' + name + '/${DRONE_BUILD_NUMBER}-' + arch,
-        source: 'artifact/*',
+        source: ['artifact/*'],
         strip_components: 1,
       },
       when: {
         status: ['failure', 'success'],
-        event: ['push'],
       },
     },
   ],
   trigger: {
-    event: ['push', 'pull_request'],
+    event: ['push'],
   },
   services: [
     {
       name: name + '.' + distro + '.com',
-      image: 'syncloud/platform-' + distro + '-' + arch + ':' + platform,
+      image: platform_image(distro),
       privileged: true,
+      entrypoint: ['/bin/sh', '-c', "mkdir -p /etc/systemd/system/snapd.service.d && printf '[Service]\\nExecStartPost=/bin/sh -c \"/usr/bin/snap set system refresh.hold=2099-01-01T00:00:00Z\"\\n' > /etc/systemd/system/snapd.service.d/disable-refresh.conf && exec /sbin/init"],
       volumes: [
         { name: 'dbus', path: '/var/run/dbus' },
         { name: 'dev', path: '/dev' },
