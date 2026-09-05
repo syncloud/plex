@@ -21,7 +21,19 @@ export function trackBrokenAssets(page: Page): string[] {
   return broken
 }
 
+async function keepOnDevice(page: Page) {
+  const host = env('PLAYWRIGHT_APP_DOMAIN')
+  await page.route('**/*', route => {
+    const url = new URL(route.request().url())
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      return route.continue()
+    }
+    return url.host === host ? route.continue() : route.abort()
+  })
+}
+
 export async function openWebClient(page: Page) {
+  await keepOnDevice(page)
   const response = await page.goto('/web/index.html')
   expect(response?.status()).toBeLessThan(400)
   await expect(page).toHaveTitle(/Plex/i)
