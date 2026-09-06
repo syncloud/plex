@@ -18,7 +18,7 @@ ARCH=$(dpkg-architecture -q DEB_HOST_ARCH)
 echo ${VERSION} > ${DIR}/version
 
 SNAP_DIR=${DIR}/build/snap
-mkdir -p ${SNAP_DIR}/meta
+mkdir -p ${SNAP_DIR}/meta ${SNAP_DIR}/bin
 
 cp -r ${DIR}/bin/. ${SNAP_DIR}/bin/
 cp -r ${DIR}/config ${SNAP_DIR}

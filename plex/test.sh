@@ -3,10 +3,10 @@
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 cd ${DIR}
 
-BUILD_DIR=${DIR}/../build/snap
+PLEX_DIR=${DIR}/../build/snap/plex
 
-export PLEX_MEDIA_SERVER_HOME=${BUILD_DIR}
-export LD_LIBRARY_PATH=${BUILD_DIR}/lib
-export LC_ALL=C
+unset LD_LIBRARY_PATH
 
-"${BUILD_DIR}/bin/Plex Media Server" --version
+"${PLEX_DIR}/Plex Media Server" --version
+"${PLEX_DIR}/Plex Tuner Service" --version
+"${PLEX_DIR}/Plex Transcoder" --version > /dev/null

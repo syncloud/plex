@@ -8,13 +8,12 @@ if [[ -z "$1" ]]; then
 fi
 
 export PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=$SNAP_DATA/Application_Support
-export PLEX_MEDIA_SERVER_HOME=$DIR
+export PLEX_MEDIA_SERVER_HOME=$DIR/plex
 export PLEX_MEDIA_SERVER_MAX_PLUGIN_PROCS=6
 export PLEX_MEDIA_SERVER_INFO_VENDOR="Syncloud"
 export PLEX_MEDIA_SERVER_INFO_DEVICE="Syncloud"
 export PLEX_MEDIA_SERVER_INFO_MODEL=$(uname -m)
 export PLEX_MEDIA_SERVER_INFO_PLATFORM_VERSION=""
-export LD_LIBRARY_PATH=$DIR/lib
 export LC_ALL=C
 export PLEX_MEDIA_SERVER_USE_SYSLOG=true
 
@@ -23,7 +22,7 @@ start)
     if [ ! -d "${PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR}" ]; then
       mkdir -p "${PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR}"
     fi
-    exec "$DIR/bin/Plex Media Server"
+    exec "$DIR/plex/Plex Media Server"
     ;;
 *)
     echo "not valid command"
