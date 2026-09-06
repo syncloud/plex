@@ -4,9 +4,6 @@ apps:
     command: bin/service.plex.sh start
     daemon: simple
     start-timeout: 600s
-    plugs:
-    - network
-    - network-bind
     restart-condition: always
     restart-delay: 10s
     before: [nginx]
@@ -15,12 +12,12 @@ apps:
     user: plex
     command: bin/service.nginx.sh
     daemon: simple
-    plugs:
-    - network
-    - network-bind
     restart-condition: always
     restart-delay: 10s
     start-timeout: 600s
+
+  cli:
+    command: bin/cli
 
   storage-change:
     command: bin/cli storage-change
@@ -37,7 +34,6 @@ apps:
   restore-post-start:
     command: bin/cli restore-post-start
 
-confinement: strict
 description: Free movies and TV plus all your personal media libraries on every device. Master your Mediaverse
 grade: stable
 name: plex

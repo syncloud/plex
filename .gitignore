@@ -1,1 +1,8 @@
 .idea
+.drone.yml
+build/
+artifact/
+node_modules/
+version
+package.name
+*.snap

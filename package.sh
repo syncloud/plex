@@ -11,13 +11,14 @@ fi
 NAME=$1
 VERSION=$2
 
-apt update
-apt install -y dpkg-dev squashfs-tools wget
+${DIR}/apt.sh dpkg-dev squashfs-tools
 
 ARCH=$(dpkg-architecture -q DEB_HOST_ARCH)
 
+echo ${VERSION} > ${DIR}/version
+
 SNAP_DIR=${DIR}/build/snap
-mkdir -p ${SNAP_DIR}/meta
+mkdir -p ${SNAP_DIR}/meta ${SNAP_DIR}/bin
 
 cp -r ${DIR}/bin/. ${SNAP_DIR}/bin/
 cp -r ${DIR}/config ${SNAP_DIR}
