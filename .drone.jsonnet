@@ -1,6 +1,6 @@
 local name = 'plex';
 local plex = '1.43.3.10896-cb3ebc72d';
-local nginx = '1.30.4';
+local nginx = '1.30.7';
 local debian = 'bookworm-slim';
 local platform = '26.08.01';
 local playwright = 'mcr.microsoft.com/playwright:v1.59.1-jammy';
